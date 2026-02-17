@@ -1,7 +1,5 @@
 import pandas as pd
 
-
-# ===== Автомобіль =====
 class Car:
     def __init__(self, car_id, brand, model, price_per_day, is_available):
         self.car_id = car_id
@@ -13,8 +11,6 @@ class Car:
     def __str__(self):
         return f"{self.car_id}: {self.brand} {self.model} - ${self.price_per_day}/day"
 
-
-# ===== Клієнт =====
 class Client:
     def __init__(self, name):
         self.name = name
@@ -25,8 +21,6 @@ class Client:
     def book_car(self, system, car_id, days, playlist_choice=None):
         return system.create_rental(self, car_id, days, playlist_choice)
 
-
-# ===== Прокат =====
 class Rental:
     def __init__(self, client, car, days, playlist_name=None, playlist_link=None):
         self.client = client
@@ -36,8 +30,6 @@ class Rental:
         self.playlist_name = playlist_name
         self.playlist_link = playlist_link
 
-
-# ===== Договір =====
 class RentalConfirmation:
     def __init__(self, rental):
         self.rental = rental
@@ -55,8 +47,6 @@ class RentalConfirmation:
 
         print("===============================\n")
 
-
-# ===== Сервіс Плейлистів =====
 class PlaylistService:
     def __init__(self):
         self.playlists = {
@@ -76,8 +66,6 @@ class PlaylistService:
     def get_playlist_link(self, name):
         return self.playlists.get(name)
 
-
-# ===== Система прокату =====
 class CarRentalSystem:
     def __init__(self, csv_file):
         self.csv_file = csv_file
@@ -144,8 +132,6 @@ class CarRentalSystem:
 
         return rental
 
-
-# ===== Головний цикл =====
 if __name__ == "__main__":
     system = CarRentalSystem("cars.csv")
 
