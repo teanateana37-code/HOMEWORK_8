@@ -1,5 +1,7 @@
 import pandas as pd
 
+
+# ===== Автомобіль =====
 class Car:
     def __init__(self, car_id, brand, model, price_per_day, is_available):
         self.car_id = car_id
@@ -11,6 +13,8 @@ class Car:
     def __str__(self):
         return f"{self.car_id}: {self.brand} {self.model} - ${self.price_per_day}/day"
 
+
+# ===== Клієнт =====
 class Client:
     def __init__(self, name):
         self.name = name
@@ -18,15 +22,19 @@ class Client:
     def view_available_cars(self, system):
         system.show_available_cars()
 
-    def book_car(self, system, car_id, days):
-        return system.create_rental(self, car_id, days)
+    def book_car(self, system, car_id, days, playlist_choice=None):
+        return system.create_rental(self, car_id, days, playlist_choice)
 
+
+# ===== Прокат =====
 class Rental:
-    def __init__(self, client, car, days):
+    def __init__(self, client, car, days, playlist_name=None, playlist_link=None):
         self.client = client
         self.car = car
         self.days = days
         self.total_price = days * car.price_per_day
+        self.playlist_name = playlist_name
+        self.playlist_link = playlist_link
 
 class RentalConfirmation:
     def __init__(self, rental):
@@ -38,12 +46,37 @@ class RentalConfirmation:
         print(f"Car: {self.rental.car.brand} {self.rental.car.model}")
         print(f"Days: {self.rental.days}")
         print(f"Total price: ${self.rental.total_price}")
+
+        if self.rental.playlist_name:
+            print(f"Option: Perfect Playlist ({self.rental.playlist_name})")
+            print(f"Playlist link: {self.rental.playlist_link}")
+
         print("===============================\n")
+
+class PlaylistService:
+    def __init__(self):
+        self.playlists = {
+            "Chill/Relax": "https://music.youtube.com/playlist?list=RELAX123",
+            "Energy/Party": "https://music.youtube.com/playlist?list=PARTY456",
+            "Road Trip Classics": "https://music.youtube.com/playlist?list=ROAD789",
+            "Hip-Hop": "https://music.youtube.com/playlist?list=HIPHOP111",
+            "Lo-Fi": "https://music.youtube.com/playlist?list=LOFI222",
+            "Pop Hits": "https://music.youtube.com/playlist?list=POP333"
+        }
+
+    def show_playlists(self):
+        print("\nAvailable playlists:")
+        for name in self.playlists:
+            print("-", name)
+
+    def get_playlist_link(self, name):
+        return self.playlists.get(name)
 
 class CarRentalSystem:
     def __init__(self, csv_file):
         self.csv_file = csv_file
         self.load_data()
+        self.playlist_service = PlaylistService()
 
     def load_data(self):
         self.df = pd.read_csv(self.csv_file)
@@ -68,24 +101,17 @@ class CarRentalSystem:
                 row["is_available"]
             )
             print(car)
-        print()
 
     def get_car_by_id(self, car_id):
-        car_row = self.df[self.df["car_id"] == car_id]
+        row = self.df[self.df["car_id"] == car_id]
 
-        if car_row.empty:
+        if row.empty:
             return None
 
-        row = car_row.iloc[0]
-        return Car(
-            row["car_id"],
-            row["brand"],
-            row["model"],
-            row["price_per_day"],
-            row["is_available"]
-        )
+        r = row.iloc[0]
+        return Car(r["car_id"], r["brand"], r["model"], r["price_per_day"], r["is_available"])
 
-    def create_rental(self, client, car_id, days):
+    def create_rental(self, client, car_id, days, playlist_choice):
         car = self.get_car_by_id(car_id)
 
         if not car:
@@ -93,13 +119,20 @@ class CarRentalSystem:
             return None
 
         if not car.is_available:
-            print("Car is already rented.")
+            print("Car already rented.")
             return None
+
+        playlist_name = None
+        playlist_link = None
+
+        if playlist_choice:
+            playlist_name = playlist_choice
+            playlist_link = self.playlist_service.get_playlist_link(playlist_choice)
 
         self.df.loc[self.df["car_id"] == car_id, "is_available"] = False
         self.save_data()
 
-        rental = Rental(client, car, days)
+        rental = Rental(client, car, days, playlist_name, playlist_link)
         confirmation = RentalConfirmation(rental)
         confirmation.print_confirmation()
 
@@ -112,7 +145,7 @@ if __name__ == "__main__":
     client = Client(name)
 
     while True:
-        print("1. View available cars")
+        print("\n1. View available cars")
         print("2. Rent a car")
         print("3. Exit")
 
@@ -123,8 +156,16 @@ if __name__ == "__main__":
 
         elif choice == "2":
             car_id = int(input("Enter car ID: "))
-            days = int(input("Enter number of days: "))
-            client.book_car(system, car_id, days)
+            days = int(input("Enter rental days: "))
+
+            add_playlist = input("Add 'Perfect Playlist' option? (yes/no): ").lower()
+
+            playlist_choice = None
+            if add_playlist == "yes":
+                system.playlist_service.show_playlists()
+                playlist_choice = input("Choose playlist mood/genre: ")
+
+            client.book_car(system, car_id, days, playlist_choice)
 
         elif choice == "3":
             print("Goodbye!")
