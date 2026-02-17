@@ -36,6 +36,8 @@ class Rental:
         self.playlist_name = playlist_name
         self.playlist_link = playlist_link
 
+
+# ===== Договір =====
 class RentalConfirmation:
     def __init__(self, rental):
         self.rental = rental
@@ -53,6 +55,8 @@ class RentalConfirmation:
 
         print("===============================\n")
 
+
+# ===== Сервіс Плейлистів =====
 class PlaylistService:
     def __init__(self):
         self.playlists = {
@@ -72,6 +76,8 @@ class PlaylistService:
     def get_playlist_link(self, name):
         return self.playlists.get(name)
 
+
+# ===== Система прокату =====
 class CarRentalSystem:
     def __init__(self, csv_file):
         self.csv_file = csv_file
@@ -138,6 +144,8 @@ class CarRentalSystem:
 
         return rental
 
+
+# ===== Головний цикл =====
 if __name__ == "__main__":
     system = CarRentalSystem("cars.csv")
 
